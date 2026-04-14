@@ -1,7 +1,15 @@
 spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: ticketing-group
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
   datasource:
     url: jdbc:oracle:thin:@localhost:1521/XEPDB1
-    username: ticketing_app
+    username: ticket_app
     password: ticket#123
     driver-class-name: oracle.jdbc.OracleDriver
 
@@ -15,4 +23,4 @@ spring:
   application:
     name: tenant-user-service
 server:
-  port: 8082
+  port: 8082  
