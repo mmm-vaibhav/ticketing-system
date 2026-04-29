@@ -21,5 +21,6 @@ public class User {
     private Long tenantId;
     private String userKey;
     private String email;
+    private String phoneNumber;
     private String role;
 }

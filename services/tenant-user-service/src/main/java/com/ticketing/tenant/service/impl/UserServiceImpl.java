@@ -8,13 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ticketing.common.events.BaseEvent;
+import com.ticketing.common.events.UserCreatedEvent;
 import com.ticketing.tenant.db.entities.User;
 import com.ticketing.tenant.db.repos.UserRepository;
-import com.ticketing.tenant.kafka.dtos.UserCreatedEvent;
 import com.ticketing.tenant.kafka.producer.KafkaProducerService;
 import com.ticketing.tenant.service.UserService;
-import com.ticketing.tenant.ui.dto.requests.UserRequestDTO;
+import com.ticketing.tenant.ui.dto.requests.UserRequestRecord;
 import com.ticketing.tenant.ui.dto.responses.UserResponseDTO;
+import com.ticketing.tenant.utils.AppConstants;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -30,29 +31,32 @@ public class UserServiceImpl implements UserService{
 		return userRepository.findByTenantId(tenantId);
 	}
 
-	public UserResponseDTO createUser(UserRequestDTO dto) {
+	public UserResponseDTO createUser(UserRequestRecord dto) {
 
 	    User user = new User();
-	    user.setTenantId(dto.getTenantId());
-	    user.setEmail(dto.getEmail());
 	    user.setUserKey(UUID.randomUUID().toString());
+	    user.setTenantId(dto.tenantId());
+	    user.setEmail(dto.email());
+	    user.setPhoneNumber(dto.phoneNumber());
+	    user.setRole(dto.role());
 
-	    User saved = userRepository.save(user);
+	    User savedUser = userRepository.save(user);
 
-	    UserCreatedEvent event = new UserCreatedEvent();
-	    event.setEventId(UUID.randomUUID().toString());
-	    event.setEventType("USER_CREATED");
-	    event.setTimestamp(LocalDateTime.now());
-
-	    UserCreatedEvent.Data data = new UserCreatedEvent.Data();
-	    data.setUserKey(saved.getUserKey());
-	    data.setTenantId(saved.getTenantId());
-	    data.setEmail(saved.getEmail());
-
-	    event.setData(data);
+	    UserCreatedEvent data = new UserCreatedEvent();
+	    data.setUserKey(savedUser.getUserKey());
+	    data.setTenantId(savedUser.getTenantId());
+	    data.setEmail(savedUser.getEmail());
+	    data.setPhoneNumber(savedUser.getPhoneNumber());
 	    
-	    kafkaProducerService.sendUserCreatedEvent(new BaseEvent<>(event));
-	    return mapToResponse(saved);
+	    BaseEvent<UserCreatedEvent> event = new BaseEvent<>();
+	    event.setEventId(UUID.randomUUID().toString());
+	    event.setEventType(AppConstants.USER_CREATION_EVENT_TYPE);
+	    event.setVersion(AppConstants.getEventversion(dto.phoneNumber()));
+	    event.setTimestamp(LocalDateTime.now());
+	    event.setData(data);	
+	    
+	    kafkaProducerService.sendUserCreatedEvent(event);
+	    return mapToResponse(savedUser);
 	}
 
 	private UserResponseDTO mapToResponse(User saved) {
@@ -62,5 +66,4 @@ public class UserServiceImpl implements UserService{
 		dto.setRole(saved.getEmail());
 		return dto;
 	}
-
 }

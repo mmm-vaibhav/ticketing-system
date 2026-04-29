@@ -1,20 +1,13 @@
 package com.ticketing.tenant.kafka.consumers;
 
-import java.time.LocalDateTime;
-
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ticketing.tenant.kafka.dtos.UserCreatedEvent;
-import com.ticketing.tenant.kafka.entity.ProcessedEvent;
 import com.ticketing.tenant.kafka.repo.ProcessedEventRepository;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 
-@Service
+
 public class NotificationConsumer {
 	
 	private final ProcessedEventRepository processedEventRepository;	
@@ -63,30 +56,30 @@ public class NotificationConsumer {
 //	    }
 //	}
 	
-	@KafkaListener(topics = "user-events", groupId = "notification-group")
-	public void consume(String message) {
-		try {
-			UserCreatedEvent event = objectMapper.readValue(message, UserCreatedEvent.class);
-			String eventId = event.getEventId();
-			if (processedEventRepository.existsById(eventId)) {
-				  System.out.println("⚠️ Duplicate event ignored: " + eventId);
-		          return;
-			}
-			if (event.getData().getEmail().contains("2")) {
-			    throw new RuntimeException("🔥 Intentionally failing for testing");
-			}
-			ProcessedEvent processed = new ProcessedEvent();
-			processed.setEventId(eventId);
-			processed.setProcessedAt(LocalDateTime.now());
-			
-			successCounter.increment();
-	        // ✅ PROCESS LOGIC
-	        System.out.println("✅ Processing event: " + eventId);
-			processedEventRepository.save(processed);
-		} catch (Exception e) {
-			failureCounter.increment();
-//			retryCounter.increment();
-	        throw new RuntimeException(e);
-	    }
-	}
+//	@KafkaListener(topics = "user-events", groupId = "notification-group")
+//	public void consume(String message) {
+//		try {
+//			UserCreatedEvent event = objectMapper.readValue(message, UserCreatedEvent.class);
+//			String eventId = event.getEventId();
+//			if (processedEventRepository.existsById(eventId)) {
+//				  System.out.println("⚠️ Duplicate event ignored: " + eventId);
+//		          return;
+//			}
+//			if (event.getData().getEmail().contains("2")) {
+//			    throw new RuntimeException("🔥 Intentionally failing for testing");
+//			}
+//			ProcessedEvent processed = new ProcessedEvent();
+//			processed.setEventId(eventId);
+//			processed.setProcessedAt(LocalDateTime.now());
+//			
+//			successCounter.increment();
+//	        // ✅ PROCESS LOGIC
+//	        System.out.println("✅ Processing event: " + eventId);
+//			processedEventRepository.save(processed);
+//		} catch (Exception e) {
+//			failureCounter.increment();
+////			retryCounter.increment();
+//	        throw new RuntimeException(e);
+//	    }
+//	}
 }

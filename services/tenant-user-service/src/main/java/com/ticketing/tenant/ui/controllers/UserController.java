@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ticketing.tenant.db.entities.User;
 import com.ticketing.tenant.service.UserService;
-import com.ticketing.tenant.ui.dto.requests.UserRequestDTO;
+import com.ticketing.tenant.ui.dto.requests.UserRequestRecord;
 import com.ticketing.tenant.ui.dto.responses.UserResponseDTO;
 import com.ticketing.tenant.utils.AppConstants;
 
@@ -33,7 +33,7 @@ public class UserController {
 	    
 	    
 	    @PostMapping
-	    public UserResponseDTO createUser(@Valid @RequestBody UserRequestDTO user) {
+	    public UserResponseDTO createUser(@Valid @RequestBody UserRequestRecord user) {
 	        return userService.createUser(user);
 	    }
 

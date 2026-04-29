@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 public class BaseEvent<T> {
     private String eventId;
     private String eventType;
+    private String version;
+    private boolean replayed;
     private LocalDateTime timestamp;
     private T data;
 }

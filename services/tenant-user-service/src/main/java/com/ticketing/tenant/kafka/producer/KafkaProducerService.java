@@ -6,7 +6,8 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ticketing.common.events.BaseEvent;
-import com.ticketing.tenant.kafka.dtos.UserCreatedEvent;
+import com.ticketing.common.events.UserCreatedEvent;
+import com.ticketing.tenant.utils.AppConstants;
 
 @Service
 public class KafkaProducerService {
@@ -17,14 +18,10 @@ public class KafkaProducerService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private static final String TOPIC = "user-events";
 
     public void sendUserCreatedEvent(BaseEvent<UserCreatedEvent> event) {
-
         try {
-//        	event.setEventId("ed4325fd-8ae7-4c9c-a2b6-67895c54640c");
-//            String message = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send(TOPIC, event);
+            kafkaTemplate.send(AppConstants.USER_TOPIC, event);
         } catch (Exception e) {
             throw new RuntimeException("Error sending event");
         }

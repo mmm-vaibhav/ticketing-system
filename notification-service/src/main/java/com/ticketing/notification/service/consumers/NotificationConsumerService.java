@@ -41,38 +41,35 @@ public class NotificationConsumerService {
         retryCounter = meterRegistry.counter("events_retried_total");
     }
 
-	
-	@KafkaListener(topics = "user-events", groupId = "notification-group-v2")
-	public void consume(BaseEvent<UserCreatedEvent> event) {
-		try {
-			System.out.println("Notofication consumer from tenanet service..\n" + event.toString());
-//			UserCreatedEvent event = objectMapper.readValue(message, UserCreatedEvent.class);
-//			BaseEvent<UserCreatedEvent> event =
-//					objectMapper.readValue(message,
-//			            new TypeReference<BaseEvent<UserCreatedEvent>>() {});
-			String eventId = event.getEventId();
-			if (processedEventRepository.existsById(eventId)) {
-				  System.out.println("⚠️ Duplicate event ignored: " + eventId);
-		          return;
-			}
-			UserCreatedEvent userEvent = event.getData();
-//			if (userEvent.getData().getEmail().contains("2")) {
-//			    throw new RuntimeException("🔥 Intentionally failing for testing");
-//			}
-			KafkaProcessedEvent processed = new KafkaProcessedEvent();
-			
-			processed.setEventId(eventId);
-			processed.setProcessedAt(LocalDateTime.now());
-			
-			successCounter.increment();
-	        // ✅ PROCESS LOGIC
-	        System.out.println("✅ Processing event: " + eventId);
-			processedEventRepository.save(processed);
-		} catch (Exception e) {
-			failureCounter.increment();
-//			retryCounter.increment();
-	        throw new RuntimeException(e);
-	    }
-	}
+	    
+    
+    @KafkaListener(topics = "user-events", groupId = "notification-group-v2")
+    public void consume(BaseEvent event) {
+
+        String eventId = event.getEventId();
+
+        if (processedEventRepository.existsById(eventId)) {
+            return;
+        }
+        
+        UserCreatedEvent user = objectMapper.convertValue(event.getData(), UserCreatedEvent.class);
+        
+//        if (user.getEmail().contains("2")) {
+//        	System.out.println("User is having 2 in email so we are retrying..");
+//        	throw new RuntimeException("Intentionally failing for testing..");
+//        }
+
+        System.out.println("✅ Processing: Event \n" + event);
+        
+        if (event.isReplayed()) {
+            System.out.println("🔁 Processing replayed event in notification consumer..");
+        }
+        
+        KafkaProcessedEvent processed = new KafkaProcessedEvent();
+        processed.setEventId(eventId);
+        processed.setProcessedAt(LocalDateTime.now());
+        processedEventRepository.save(processed);
+        successCounter.increment();
+    }
 
 }

@@ -6,6 +6,7 @@ spring:
       auto-offset-reset: earliest
     producer:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
   datasource:
     url: jdbc:oracle:thin:@localhost:1521/XEPDB1
     username: ticket_app

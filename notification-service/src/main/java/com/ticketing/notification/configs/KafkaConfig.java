@@ -11,6 +11,9 @@ import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
 
+import com.ticketing.common.events.BaseEvent;
+import com.ticketing.common.events.UserCreatedEvent;
+
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
@@ -38,7 +41,7 @@ public class KafkaConfig {
 
 	
 	@Bean
-	public DefaultErrorHandler errorHandler(KafkaTemplate<String, String> template) {
+	public DefaultErrorHandler errorHandler(KafkaTemplate<String, Object> template) {
 
 	    DeadLetterPublishingRecoverer recoverer =
 	        new DeadLetterPublishingRecoverer(template,
@@ -52,18 +55,54 @@ public class KafkaConfig {
 	    handler.setRetryListeners((record, ex, deliveryAttempt) -> {
 	    	System.out.println("Retry incrementing..");
 	        retryCounter.increment(); // ✅ correct place
+	        ex.printStackTrace();
 	    });
 
 	    return handler;
 	}
 
+//	@Bean
+//	public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
+//			ConsumerFactory<String, String> consumerFactory, DefaultErrorHandler errorHandler) {
+//		ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+//		factory.setConsumerFactory(consumerFactory);
+//		factory.setCommonErrorHandler(errorHandler);
+//		return factory;
+//	}
+	
+//	@Bean
+//	public ConsumerFactory<String, BaseEvent<UserCreatedEvent>> consumerFactory() {
+//
+//	    JsonDeserializer<BaseEvent<UserCreatedEvent>> deserializer =
+//	            new JsonDeserializer<>();
+//
+//	    deserializer.addTrustedPackages("*");
+//	    deserializer.setUseTypeHeaders(false);
+//
+//	    return new DefaultKafkaConsumerFactory<>(
+//	            Map.of(
+//	                ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
+//	                ConsumerConfig.GROUP_ID_CONFIG, "notification-group-v2",
+//	                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"
+//	            ),
+//	            new StringDeserializer(),
+//	            deserializer
+//	    );
+//	}
+	
+	
 	@Bean
-	public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
-			ConsumerFactory<String, String> consumerFactory, DefaultErrorHandler errorHandler) {
-		ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
-		factory.setConsumerFactory(consumerFactory);
-		factory.setCommonErrorHandler(errorHandler);
-		return factory;
+	public ConcurrentKafkaListenerContainerFactory<String, BaseEvent<UserCreatedEvent>> kafkaListenerContainerFactory(
+	        ConsumerFactory<String, BaseEvent<UserCreatedEvent>> consumerFactory,
+	        DefaultErrorHandler errorHandler) {
+
+	    ConcurrentKafkaListenerContainerFactory<String, BaseEvent<UserCreatedEvent>> factory =
+	            new ConcurrentKafkaListenerContainerFactory<>();
+
+	    factory.setConsumerFactory(consumerFactory);
+	    factory.setCommonErrorHandler(null);
+
+	    return factory;
 	}
 
 }
