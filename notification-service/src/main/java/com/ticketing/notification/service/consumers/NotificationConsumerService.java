@@ -54,15 +54,16 @@ public class NotificationConsumerService {
         
         UserCreatedEvent user = objectMapper.convertValue(event.getData(), UserCreatedEvent.class);
         
-//        if (user.getEmail().contains("2")) {
-//        	System.out.println("User is having 2 in email so we are retrying..");
-//        	throw new RuntimeException("Intentionally failing for testing..");
-//        }
+        if (user.getEmail().contains("2") && !event.isReplayed()) {
+        	System.out.println("User is having 2 and it is a fresh event having '2' in email so we are retrying..");
+        	throw new RuntimeException("Intentionally failing for testing..");
+        }
 
         System.out.println("✅ Processing: Event \n" + event);
         
         if (event.isReplayed()) {
             System.out.println("🔁 Processing replayed event in notification consumer..");
+            System.out.println("🔁 Processing replayed event in notification consumer.. and email is: " + user.getEmail());
         }
         
         KafkaProcessedEvent processed = new KafkaProcessedEvent();
