@@ -5,7 +5,10 @@ import java.io.Serializable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.ticketing.tenant.db.entities.Tenant;
+import com.ticketing.tenant.db.enums.TenantStatus;
 
 public interface TenantRepository extends JpaRepository<Tenant, Serializable>{
+	
+	boolean existsByIdAndStatus(Long tenantId, TenantStatus status);
 
 }

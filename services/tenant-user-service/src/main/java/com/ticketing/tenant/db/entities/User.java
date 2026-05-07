@@ -1,6 +1,10 @@
 package com.ticketing.tenant.db.entities;
 
+import com.ticketing.tenant.db.enums.UserRoles;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,5 +26,7 @@ public class User {
     private String userKey;
     private String email;
     private String phoneNumber;
-    private String role;
+    
+    @Enumerated(EnumType.STRING)
+    private UserRoles role;
 }

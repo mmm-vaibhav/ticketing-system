@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ticketing.common.events.BaseEvent;
 import com.ticketing.common.events.UserCreatedEvent;
+import com.ticketing.notification.context.TenantContext;
 import com.ticketing.notification.db.repos.KafkaProcessedEventRepo;
 import com.ticketing.notification.entities.KafkaProcessedEvent;
 
@@ -44,33 +45,48 @@ public class NotificationConsumerService {
 	    
     
     @KafkaListener(topics = "user-events", groupId = "notification-group-v2")
-    public void consume(BaseEvent event) {
+    public void consume(BaseEvent<UserCreatedEvent> event) {
 
-        String eventId = event.getEventId();
+        Long tenantId = Long.valueOf(event.getTenantId());
 
-        if (processedEventRepository.existsById(eventId)) {
-            return;
-        }
-        
-        UserCreatedEvent user = objectMapper.convertValue(event.getData(), UserCreatedEvent.class);
-        
-        if (user.getEmail().contains("2") && !event.isReplayed()) {
-        	System.out.println("User is having 2 and it is a fresh event having '2' in email so we are retrying..");
-        	throw new RuntimeException("Intentionally failing for testing..");
+        if (tenantId == null) {
+            throw new RuntimeException("Missing tenantId in event");
         }
 
-        System.out.println("✅ Processing: Event \n" + event);
-        
-        if (event.isReplayed()) {
-            System.out.println("🔁 Processing replayed event in notification consumer..");
-            System.out.println("🔁 Processing replayed event in notification consumer.. and email is: " + user.getEmail());
+        TenantContext.setTenantId(tenantId);
+
+        try {
+            String eventId = event.getEventId();
+
+            // ✅ Tenant-aware idempotency
+            if (processedEventRepository.existsByTenantIdAndEventId(tenantId, eventId)) {
+                return;
+            }
+
+            UserCreatedEvent user =
+                    objectMapper.convertValue(event.getData(), UserCreatedEvent.class);
+
+            if (user.getEmail().contains("2") && !event.isReplayed()) {
+                System.out.println("Retrying scenario triggered...");
+                throw new RuntimeException("Intentional failure");
+            }
+
+            System.out.println("✅ Processing Event: " + event);
+
+            if (event.isReplayed()) {
+                System.out.println("🔁 Replay event: " + user.getEmail());
+            }
+
+            // ✅ Save with tenant_id
+            KafkaProcessedEvent processed = new KafkaProcessedEvent();
+            processed.setEventId(eventId);
+            processed.setTenantId(tenantId);   // 🔥 REQUIRED
+            processed.setProcessedAt(LocalDateTime.now());
+            processedEventRepository.save(processed);
+            successCounter.increment();
+
+        } finally {
+            TenantContext.clear(); // 🔥 CRITICAL
         }
-        
-        KafkaProcessedEvent processed = new KafkaProcessedEvent();
-        processed.setEventId(eventId);
-        processed.setProcessedAt(LocalDateTime.now());
-        processedEventRepository.save(processed);
-        successCounter.increment();
     }
-
 }

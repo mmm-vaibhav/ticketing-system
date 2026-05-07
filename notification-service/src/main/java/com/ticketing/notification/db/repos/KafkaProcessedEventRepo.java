@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.ticketing.notification.entities.KafkaProcessedEvent;
 
 public interface KafkaProcessedEventRepo extends JpaRepository<KafkaProcessedEvent, Serializable>{
-
+	
+	boolean existsByTenantIdAndEventId(Long tenantId, String eventId);
 }

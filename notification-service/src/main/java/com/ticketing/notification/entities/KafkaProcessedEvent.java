@@ -16,6 +16,8 @@ public class KafkaProcessedEvent {
 	
     @Id
     private String eventId;
+    
+    private Long tenantId;
 
     private LocalDateTime processedAt;
 

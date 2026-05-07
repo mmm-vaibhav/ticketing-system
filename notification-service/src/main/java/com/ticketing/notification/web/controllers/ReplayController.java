@@ -26,11 +26,8 @@ public class ReplayController {
     public String replayEvent(@RequestBody String message) {
         try {
             BaseEvent event = objectMapper.readValue(message, BaseEvent.class);
-
             replayService.replay(event);
-
             return "Replay triggered for eventId: " + event.getEventId();
-
         } catch (Exception e) {
             return "Replay failed";
         }

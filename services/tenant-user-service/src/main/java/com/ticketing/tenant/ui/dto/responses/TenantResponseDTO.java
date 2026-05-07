@@ -1,13 +1,15 @@
 package com.ticketing.tenant.ui.dto.responses;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.ticketing.tenant.db.enums.TenantStatus;
 
-@Getter
-@Setter
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
 public class TenantResponseDTO {
 
 	private String tenantKey;
 	private String name;
-	private String status;
+	private TenantStatus status;
 }

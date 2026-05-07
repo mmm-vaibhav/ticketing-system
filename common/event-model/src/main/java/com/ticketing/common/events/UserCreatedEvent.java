@@ -9,10 +9,7 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 public class UserCreatedEvent {
-	
     	private String userKey;
-        private Long tenantId;
         private String email;
         private String phoneNumber;
-
 }
