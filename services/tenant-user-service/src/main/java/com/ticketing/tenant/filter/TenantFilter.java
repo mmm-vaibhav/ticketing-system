@@ -9,6 +9,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import com.ticketing.tenant.context.TenantContext;
+import com.ticketing.tenant.context.config.TenantFilterConfig;
 import com.ticketing.tenant.utils.AppConstant;
 
 import jakarta.servlet.FilterChain;
@@ -20,9 +21,11 @@ import jakarta.servlet.http.HttpServletResponse;
 public class TenantFilter extends OncePerRequestFilter {
 	
     private final HandlerExceptionResolver resolver;
+    private final TenantFilterConfig config;
 	
-	public TenantFilter(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
+	public TenantFilter(@Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver, TenantFilterConfig config) {
 		this.resolver = resolver;
+		this.config = config;
 	}
 
 	@Override
@@ -50,7 +53,7 @@ public class TenantFilter extends OncePerRequestFilter {
             }
 
             TenantContext.setTenantId(tenantId);
-
+            config.enableFilter(tenantId);
             filterChain.doFilter(request, response);
 
         } catch (Exception ex) {

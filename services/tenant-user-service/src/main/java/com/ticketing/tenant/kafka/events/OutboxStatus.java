@@ -3,5 +3,6 @@ package com.ticketing.tenant.kafka.events;
 public enum OutboxStatus {
     PENDING,
     SENT,
-    FAILED
+    FAILED,
+    RETRYABLE_FAILED
 }

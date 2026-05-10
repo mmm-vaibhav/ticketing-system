@@ -11,24 +11,29 @@ import com.ticketing.common.events.UserCreatedEvent;
 import com.ticketing.notification.context.TenantContext;
 import com.ticketing.notification.db.repos.KafkaProcessedEventRepo;
 import com.ticketing.notification.entities.KafkaProcessedEvent;
+import com.ticketing.notification.entities.ProcessedEventId;
+import com.ticketing.notification.service.NotificationService;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class NotificationConsumerService {
 	
 	
 	private final KafkaProcessedEventRepo processedEventRepository;	
 	private final ObjectMapper objectMapper;
     private final MeterRegistry meterRegistry;
+    private final NotificationService notificationService;
 
-    public NotificationConsumerService(MeterRegistry meterRegistry, ObjectMapper objectMapper, KafkaProcessedEventRepo processedEventRepository) {
-        this.meterRegistry = meterRegistry;
-        this.objectMapper = objectMapper;
-        this.processedEventRepository = processedEventRepository;
-    }
+//    public NotificationConsumerService(MeterRegistry meterRegistry, ObjectMapper objectMapper, KafkaProcessedEventRepo processedEventRepository) {
+//        this.meterRegistry = meterRegistry;
+//        this.objectMapper = objectMapper;
+//        this.processedEventRepository = processedEventRepository;
+//    }
     
     
     private Counter successCounter;
@@ -52,14 +57,12 @@ public class NotificationConsumerService {
         if (tenantId == null) {
             throw new RuntimeException("Missing tenantId in event");
         }
-
         TenantContext.setTenantId(tenantId);
-
         try {
             String eventId = event.getEventId();
-
+            ProcessedEventId id = new ProcessedEventId(eventId, tenantId);
             // ✅ Tenant-aware idempotency
-            if (processedEventRepository.existsByTenantIdAndEventId(tenantId, eventId)) {
+            if (processedEventRepository.existsById(id)) {
                 return;
             }
 
@@ -71,20 +74,20 @@ public class NotificationConsumerService {
                 throw new RuntimeException("Intentional failure");
             }
 
-            System.out.println("✅ Processing Event: " + event);
-
             if (event.isReplayed()) {
                 System.out.println("🔁 Replay event: " + user.getEmail());
             }
-
-            // ✅ Save with tenant_id
-            KafkaProcessedEvent processed = new KafkaProcessedEvent();
-            processed.setEventId(eventId);
-            processed.setTenantId(tenantId);   // 🔥 REQUIRED
-            processed.setProcessedAt(LocalDateTime.now());
-            processedEventRepository.save(processed);
-            successCounter.increment();
-
+            
+            System.out.println("✅ Processing Event: " + event);
+            boolean result = notificationService.notifyUser(event.getData().getEmail());
+            if (result) {
+            	// ✅ Save with tenant_id
+                KafkaProcessedEvent processed = new KafkaProcessedEvent();
+                processed.setId(id);
+                processed.setProcessedAt(LocalDateTime.now());
+                processedEventRepository.save(processed);
+                successCounter.increment();
+            }
         } finally {
             TenantContext.clear(); // 🔥 CRITICAL
         }

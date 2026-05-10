@@ -100,7 +100,7 @@ public class KafkaConfig {
 	            new ConcurrentKafkaListenerContainerFactory<>();
 
 	    factory.setConsumerFactory(consumerFactory);
-	    factory.setCommonErrorHandler(null);
+	    factory.setCommonErrorHandler(errorHandler);
 
 	    return factory;
 	}

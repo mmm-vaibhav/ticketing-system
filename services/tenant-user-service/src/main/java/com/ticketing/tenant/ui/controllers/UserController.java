@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ticketing.tenant.context.TenantContext;
 import com.ticketing.tenant.db.entities.User;
 import com.ticketing.tenant.service.UserService;
 import com.ticketing.tenant.ui.dto.requests.UserRequestRecord;
@@ -24,11 +25,12 @@ import jakarta.validation.Valid;
 public class UserController {
 	
 	  @Autowired
-	    private UserService userService;
+	  private UserService userService;
+	  
 
 	    @GetMapping
-	    public List<User> getUsers(@RequestParam Long tenantId) {
-	        return userService.getUsersByTenant(tenantId);
+	    public List<User> getUsers() {
+	        return userService.getUsersByTenant(TenantContext.getTenant());
 	    }
 	    
 	    

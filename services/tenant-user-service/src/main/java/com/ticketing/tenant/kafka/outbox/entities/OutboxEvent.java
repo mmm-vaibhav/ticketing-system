@@ -13,6 +13,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "outbox_events", 
@@ -20,6 +21,7 @@ indexes = @Index(name = "idx_status_created", columnList = "status, createdAt"))
 
 @Getter
 @Setter
+@ToString
 public class OutboxEvent {
 
     @Id

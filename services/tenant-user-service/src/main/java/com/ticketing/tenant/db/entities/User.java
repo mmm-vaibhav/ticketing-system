@@ -1,5 +1,9 @@
 package com.ticketing.tenant.db.entities;
 
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
+
 import com.ticketing.tenant.db.enums.UserRoles;
 
 import jakarta.persistence.Entity;
@@ -14,6 +18,9 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "users")
+@FilterDef(name = "tenantFilter",
+parameters = @ParamDef(name = "tenantId", type = Long.class))
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 @Getter
 @Setter
 public class User {

@@ -1,9 +1,9 @@
-package com.ticketing.notification.entities;
+	package com.ticketing.notification.entities;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,10 +14,8 @@ import lombok.Setter;
 @Setter
 public class KafkaProcessedEvent {
 	
-    @Id
-    private String eventId;
-    
-    private Long tenantId;
+	@EmbeddedId
+    private ProcessedEventId id;
 
     private LocalDateTime processedAt;
 

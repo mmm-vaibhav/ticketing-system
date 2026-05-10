@@ -23,7 +23,6 @@ public class DLTConsumer {
             System.out.println("Received from DLT: " + event.getEventId());
             event.setReplayed(true);
             System.out.println("DLT event: " + event.getEventId());
-
         } catch (Exception e) {
             System.out.println("Failed to parse DLT message");
         }
