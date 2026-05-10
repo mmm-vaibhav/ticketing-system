@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ticketing.common.events.BaseEvent;
+import com.ticketing.notification.context.TenantContext;
 
 @Service
 public class DLTConsumer {
@@ -25,6 +26,8 @@ public class DLTConsumer {
             System.out.println("DLT event: " + event.getEventId());
         } catch (Exception e) {
             System.out.println("Failed to parse DLT message");
+        } finally {
+        	TenantContext.clear();
         }
     }
 }
