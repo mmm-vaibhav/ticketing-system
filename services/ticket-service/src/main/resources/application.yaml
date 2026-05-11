@@ -1,3 +1,19 @@
 spring:
   application:
     name: ticket-service
+  datasource:
+    url: jdbc:oracle:thin:@//localhost:1521/XEPDB1
+    username:
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.OracleDialect
+        format_sql: true
+  kafka:
+    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
+server:
+  port: 8088
+  address: 0.0.0.0
